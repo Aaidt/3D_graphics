@@ -14,18 +14,67 @@ function clear() {
 }
 
 function point({ x, y }) {
-   const s = 20;
+   const s = 15;
    ctx.fillStyle = FOREGROUND;
-   ctx.fillRect(x, y, s, s);
+   ctx.fillRect(x - s / 2, y - s / 2, s, s);
 }
 
 function screen(p) {
    // -1...1 => 0...w/h
    return {
       x: (p.x + 1) / 2 * game.width,
-      y: (p.y + 1) / 2 * game.height
+      y: (1 - (p.y + 1) / 2) * game.height
    }
 }
 
-clear()
-point(screen({ x: 0, y: 0 }));
+function project({x, y, z}){
+   return {
+      x: x/z,
+      y: y/z
+   }
+}
+
+const vs = [
+   { x: 0.25, y: 0.25, z: 0.25},
+   { x: -0.25, y: 0.25, z: 0.25},
+   { x: 0.25, y: -0.25, z: 0.25},
+   { x: -0.25, y: -0.25, z: 0.25},
+
+   { x: 0.25, y: 0.25, z: -0.25},
+   { x: -0.25, y: 0.25, z: -0.25},
+   { x: 0.25, y: -0.25, z: -0.25},
+   { x: -0.25, y: -0.25, z: -0.25}
+]
+
+function translate_z({x, y, z}, dz){
+   return {x, y, z: z + dz};
+}
+
+function rotate_xz({x, y, z}, angle){
+   const c = Math.cos(angle);
+   const s = Math.sin(angle);
+
+   return {
+      x: x*c - z*s,
+      y,
+      z: x*s + z*c
+   }
+}
+
+const FPS = 60;
+let dz = 1;
+let angle = 0;
+
+function frame(){
+   const dt = 1/FPS;
+   // dz += 1*dt;
+   angle += 2*Math.PI*dt;
+
+   clear();
+   for(const v of vs){
+      point(screen(project(translate_z(rotate_xz(v, angle), dz))));
+   }
+   setTimeout(frame, 1000/FPS);
+}
+
+setTimeout(frame, 1000/FPS);
