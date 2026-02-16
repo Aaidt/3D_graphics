@@ -37,13 +37,22 @@ function project({x, y, z}){
 const vs = [
    { x: 0.25, y: 0.25, z: 0.25},
    { x: -0.25, y: 0.25, z: 0.25},
-   { x: 0.25, y: -0.25, z: 0.25},
    { x: -0.25, y: -0.25, z: 0.25},
+   { x: 0.25, y: -0.25, z: 0.25},
 
    { x: 0.25, y: 0.25, z: -0.25},
    { x: -0.25, y: 0.25, z: -0.25},
-   { x: 0.25, y: -0.25, z: -0.25},
-   { x: -0.25, y: -0.25, z: -0.25}
+   { x: -0.25, y: -0.25, z: -0.25},
+   { x: 0.25, y: -0.25, z: -0.25}
+]
+
+const fs = [
+   [0, 1, 2, 3],
+   [4, 5, 6, 7],
+   [0, 4],
+   [1, 5],
+   [2, 6],
+   [3, 7],
 ]
 
 function translate_z({x, y, z}, dz){
@@ -65,14 +74,33 @@ const FPS = 60;
 let dz = 1;
 let angle = 0;
 
+function line(p1, p2){
+   ctx.strokeStyle = FOREGROUND
+
+   ctx.beginPath();
+   ctx.moveTo(p1.x, p1.y);
+   ctx.lineTo(p2.x, p2.y);
+   ctx.stroke();  
+}
+
 function frame(){
    const dt = 1/FPS;
    // dz += 1*dt;
-   angle += 2*Math.PI*dt;
+   angle += Math.PI*dt;
 
    clear();
-   for(const v of vs){
-      point(screen(project(translate_z(rotate_xz(v, angle), dz))));
+   // for(const v of vs){
+   //    point(screen(project(translate_z(rotate_xz(v, angle), dz))));
+   // }
+   for(const f of fs){
+      for(let i = 0; i < f.length; i++){
+         const a = vs[f[i]]
+         const b = vs[f[(i+1)%f.length]]
+         line(
+            screen(project(translate_z(rotate_xz(a, angle), dz))),
+            screen(project(translate_z(rotate_xz(b, angle), dz)))
+      )
+      }
    }
    setTimeout(frame, 1000/FPS);
 }
